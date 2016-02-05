@@ -117,7 +117,7 @@ static void *work(void *arg)
 		sleep(rand() % 3);
 
 		rc = ioctl(fd, SG_IO, &hdr);
-		if (rc < 0) {
+		if (rc < 0 && errno != EINTR) {
 			perror("ioctl");
 			goto out_close;
 		}
