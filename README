@@ -1,0 +1,2 @@
+sg_signal is a test application specifically designed for testing the SCSI
+generic driver in conjunction with signal handling.
