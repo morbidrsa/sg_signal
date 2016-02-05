@@ -30,6 +30,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <time.h>
 
 #define DEV_NAME_MAX 255
 #define READ16_REPLY_LEN 512
@@ -43,7 +44,24 @@ struct config {
 
 static void sighand(int __unused signo)
 {
-	printf(".");
+	static char c = '|';
+
+	switch (c) {
+		case '|':
+			c = '/';
+			break;
+		case '/':
+			c = '-';
+			break;
+		case '-':
+			c = '\\';
+			break;
+		case '\\':
+			c = '|';
+			break;
+	}
+
+	printf("%c\b", c);
 	fflush(stdout);
 
 	return;
@@ -143,6 +161,8 @@ int main(int argc, char **argv)
 	struct sigaction actions;
 	struct config config;
 	pthread_t worker;
+	time_t start, end;
+	double diff;
 	int rc;
 
 	if (argc < 2) {
@@ -164,6 +184,7 @@ int main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
+	time(&start);
 	/* Create SCSI worker thread */
 	rc = pthread_create(&worker, NULL, work, &config);
 	if (rc < 0) {
@@ -186,6 +207,10 @@ int main(int argc, char **argv)
 	}
 
 	pthread_join(worker, NULL);
+
+	time(&end);
+	diff = difftime(end, start);
+	printf("Signal handling error reproduced after %lf sec\n", diff);
 
 	return 0;
 }
